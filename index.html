@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calisthenics 365</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#181A1F">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --ink:#181A1F; --paper:#F6F5F1; --cobalt:#2743D0; --petrol:#17685B;
+    --amber:#E9A820; --fade:#9A988F; --line:#DDDBD2;
+    --display:"Archivo Black","Arial Black","Helvetica Neue",sans-serif;
+    --body:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+       max-width:480px;margin:0 auto;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  button{font-family:var(--body);cursor:pointer}
+  button:focus-visible{outline:3px solid var(--cobalt);outline-offset:2px}
+  a{color:var(--cobalt)}
+  header{padding:calc(20px + env(safe-area-inset-top)) 20px 12px;border-bottom:2px solid var(--ink)}
+  .logo{font-family:var(--display);font-size:22px;letter-spacing:-.5px;line-height:1}
+  .logo span{color:var(--cobalt)}
+  .hstats{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--fade);font-family:var(--mono)}
+  main{padding:20px}
+  .card{background:#fff;border:2px solid var(--ink);border-radius:14px;overflow:hidden;margin-bottom:16px}
+  .card-soft{border-color:var(--line)}
+  .cardpad{padding:16px}
+  .phasebar{padding:10px 16px;display:flex;justify-content:space-between;font-size:12px;font-family:var(--mono);color:#fff}
+  h2.big{font-family:var(--display);font-size:30px;line-height:1.05;margin:0}
+  h3.sec{font-family:var(--display);font-size:15px;margin:0 0 10px}
+  .block{border-left:3px solid var(--cobalt);padding-left:12px;margin-top:12px}
+  .bname{font-weight:700;font-size:15px}
+  .bdose{font-family:var(--mono);font-size:12px;color:var(--cobalt);margin:2px 0}
+  .bcue{font-size:13px;color:#55534B;line-height:1.4}
+  .vlink{display:inline-block;margin-top:4px;font-size:12px;font-weight:700;text-decoration:none}
+  .btn{width:100%;padding:16px 0;background:var(--ink);color:var(--paper);border:none;border-radius:10px;
+       font-family:var(--display);font-size:16px;letter-spacing:1px}
+  .btn2{width:100%;padding:10px 0;background:transparent;color:var(--fade);border:1px solid var(--line);border-radius:10px;font-size:13px;margin-top:8px}
+  .btn3{width:100%;padding:10px 0;background:transparent;color:var(--fade);border:none;font-size:13px}
+  .note{font-size:12px;color:var(--fade);line-height:1.5}
+  .doneflag{margin-top:18px;text-align:center;padding:14px;background:var(--paper);border-radius:10px;color:var(--petrol);font-weight:700}
+  /* timer */
+  .tcenter{text-align:center}
+  .tclock{font-family:var(--mono);font-size:76px;font-weight:700;margin:12px 0}
+  .dots{display:flex;gap:6px;justify-content:center;margin-bottom:24px}
+  .dot{width:10px;height:10px;border-radius:99px;background:var(--line);transition:transform .15s}
+  .dot.cur{background:var(--cobalt);transform:scale(1.3)}
+  .dot.done{background:var(--petrol)}
+  /* progress */
+  .statrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+  .stat{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:12px 8px;text-align:center}
+  .stat .v{font-family:var(--display);font-size:22px}
+  .stat .l{font-family:var(--mono);font-size:10px;color:var(--fade)}
+  .grid365{display:grid;grid-template-columns:repeat(26,1fr);gap:3px}
+  .cell{aspect-ratio:1;border-radius:2px;background:#ECEAE2}
+  .legend{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;font-size:10px;font-family:var(--mono);color:var(--fade)}
+  .legend i{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:4px}
+  .badge{display:flex;align-items:center;gap:10px;padding:4px 0;font-size:14px}
+  .badge.locked{opacity:.45}
+  /* photos */
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .pgrid img,.cmp img{width:100%;border-radius:8px;display:block}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .plabel{font-family:var(--mono);font-size:10px;color:var(--fade);text-align:center;margin-top:2px}
+  /* plan */
+  .phase{margin-bottom:12px}
+  .prow{display:flex;justify-content:space-between;align-items:baseline}
+  .pname{font-family:var(--display);font-size:18px}
+  .pweeks{font-family:var(--mono);font-size:11px;color:var(--fade)}
+  .rhythm{display:flex;gap:10px;font-size:13px;padding:4px 0;color:#55534B}
+  .rhythm b{font-family:var(--mono);width:34px;color:var(--fade);font-weight:400}
+  .rhythm.cur{color:var(--cobalt);font-weight:700}
+  nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--ink);
+      display:grid;grid-template-columns:repeat(4,1fr);z-index:40;padding-bottom:env(safe-area-inset-bottom)}
+  nav button{background:none;border:none;padding:14px 0 16px;color:#6E6C64;font-family:var(--mono);font-size:12px;letter-spacing:1px;border-top:3px solid transparent}
+  nav button.on{color:var(--paper);border-top-color:var(--cobalt)}
+  #toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);
+         padding:10px 18px;border-radius:999px;font-size:13px;z-index:50;max-width:90%;display:none}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">CALISTHENICS <span>365</span></div>
+  <div class="hstats"><span id="hDay"></span><span id="hWeek"></span><span id="hStreak"></span></div>
+</header>
+<div id="toast"></div>
+<main id="view"></main>
+<nav>
+  <button data-tab="today" class="on">TODAY</button>
+  <button data-tab="plan">PLAN</button>
+  <button data-tab="progress">PROGRESS</button>
+  <button data-tab="photos">PHOTOS</button>
+</nav>
+<input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+
+<script>
+/* ============ PROGRAM DATA ============ */
+const DAY_TYPES=["PUSH","PULL","LEGS + CORE","HANDSTAND / SKILL","FULL BODY","TEST DAY","MOBILITY"];
+const DOW=["MON","TUE","WED","THU","FRI","SAT","SUN"];
+const PHASE_META=[
+ {name:"Foundation",weeks:"Weeks 1–13",color:"#2743D0",blurb:"Build joint prep, baseline strength and the daily habit. Everything scales to your level."},
+ {name:"Builder",weeks:"Weeks 14–26",color:"#17685B",blurb:"Full push-ups, first pull-ups, dips and wall handstands become your working sets."},
+ {name:"Advanced",weeks:"Weeks 27–39",color:"#E9A820",blurb:"Archer work, L-sits, pistol progressions and freestanding handstand practice."},
+ {name:"Expert",weeks:"Weeks 40–52",color:"#181A1F",blurb:"Muscle-up, handstand push-up, pistol squat, dragon flag. The year's summit."}];
+const PROGRAM=[
+{ "PUSH":[
+   {n:"Incline push-ups",d:"3 × 8–12",c:"Hands on bench or bar. Body one straight line, elbows ~45°."},
+   {n:"Pike shoulder taps",d:"3 × 6/side",c:"Hips high, shift weight slowly before lifting the hand."},
+   {n:"Bench dips (feet down)",d:"3 × 8–10",c:"Shoulders down away from ears, shallow depth to start."}],
+ "PULL":[
+   {n:"Ring/bar rows",d:"3 × 8–12",c:"Lower the angle over the weeks. Squeeze shoulder blades."},
+   {n:"Dead hangs",d:"3 × 20–40s",c:"Full grip, relaxed then active shoulders. Builds grip + shoulder health."},
+   {n:"Scapular pulls",d:"3 × 6–8",c:"Arms straight on the bar — lift chest by pulling shoulder blades down."}],
+ "LEGS + CORE":[
+   {n:"Box/assisted squats",d:"3 × 10–15",c:"Sit back to a bench, stand without hands. Progress to full squats."},
+   {n:"Glute bridges",d:"3 × 12",c:"Squeeze at the top for 2s, ribs down."},
+   {n:"Plank",d:"3 × 20–45s",c:"Squeeze glutes and abs — no sagging hips."}],
+ "HANDSTAND / SKILL":[
+   {n:"Wall plank walk-ups",d:"3 × 3 slow reps",c:"Feet on bench/wall, walk hands back a little further each week."},
+   {n:"Wrist prep circuit",d:"2 min",c:"Rocks, lifts and stretches — insurance for the whole year."},
+   {n:"Hollow body hold",d:"3 × 15–30s",c:"Lower back glued to the floor. The shape behind every skill."}],
+ "FULL BODY":[
+   {n:"Incline push-ups",d:"2 × max−2",c:"Stop two reps before failure."},
+   {n:"Rows",d:"2 × max−2",c:"Control the lowering — 2 seconds down."},
+   {n:"Squats + plank",d:"2 rounds",c:"15 squats straight into a 30s plank."}],
+ "TEST DAY":[
+   {n:"Max incline push-ups",d:"1 all-out set",c:"Log the number. Beat it next week."},
+   {n:"Max dead hang",d:"1 attempt",c:"Time it to the second."},
+   {n:"Max plank",d:"1 attempt",c:"Stop when form breaks, not when it burns."}],
+ "MOBILITY":[
+   {n:"Deep squat sits",d:"3 × 45s",c:"Hold something for balance if needed. Chest tall."},
+   {n:"Shoulder dislocates",d:"3 × 8",c:"Band or towel, wide grip, slow."},
+   {n:"Couch/hip flexor stretch",d:"60s per side",c:"Squeeze the back glute, don't arch the lower back."}]},
+{ "PUSH":[
+   {n:"Full push-ups",d:"3 × 6–12",c:"Chest to fist-height from floor. Add a diamond set when 3×12 is easy."},
+   {n:"Parallel bar dips",d:"3 × 4–8",c:"Band assist if needed. Shoulders below elbows at bottom."},
+   {n:"Pike push-ups",d:"3 × 5–8",c:"Head travels forward to a triangle between hands."}],
+ "PULL":[
+   {n:"Negative pull-ups",d:"3 × 4–5",c:"Jump up, lower for 5 full seconds. First strict rep is coming."},
+   {n:"Chin-ups / band pull-ups",d:"3 × 3–6",c:"Chest to bar mindset, no kipping."},
+   {n:"Rows (feet elevated)",d:"3 × 8–10",c:"Pause 1s at the top."}],
+ "LEGS + CORE":[
+   {n:"Bulgarian split squats",d:"3 × 6–10/side",c:"Rear foot on bench, torso tall, knee tracks over toes."},
+   {n:"Nordic curl negatives",d:"3 × 3–5",c:"Anchor feet, lower as slowly as possible, push back up."},
+   {n:"Hanging knee raises",d:"3 × 8–12",c:"No swing — posterior tilt at the top."}],
+ "HANDSTAND / SKILL":[
+   {n:"Wall handstand (back to wall)",d:"4 × 20–45s",c:"Push tall through shoulders, ribs in, squeeze legs together."},
+   {n:"L-sit tuck (parallettes/bench)",d:"4 × 10–20s",c:"Depress shoulders hard, knees to chest."},
+   {n:"Hollow rocks",d:"3 × 10–15",c:"Rock shoulders-to-hips without breaking the shape."}],
+ "FULL BODY":[
+   {n:"Push-ups",d:"2 × max−2",c:"Crisp reps only."},
+   {n:"Pull-up work",d:"2 × max effort",c:"Negatives or strict reps, whichever you're on."},
+   {n:"Split squats + knee raises",d:"2 rounds",c:"8/side straight into 10 raises."}],
+ "TEST DAY":[
+   {n:"Max push-ups",d:"1 all-out set",c:"Full depth or it doesn't count."},
+   {n:"Max pull-ups (or longest negative)",d:"1 attempt",c:"Milestone: first strict pull-up lives here."},
+   {n:"Max wall handstand",d:"1 attempt",c:"Time against the wall."}],
+ "MOBILITY":[
+   {n:"German hang prep",d:"3 × 15s",c:"Rings or low bar, ease into the shoulder stretch."},
+   {n:"Deep squat + thoracic rotations",d:"3 × 5/side",c:"In the squat, reach one arm to the ceiling."},
+   {n:"Wrist + hamstring flow",d:"3 min",c:"Slow, breathing through each position."}]},
+{ "PUSH":[
+   {n:"Pseudo planche push-ups",d:"3 × 5–8",c:"Hands at waist, lean far forward, fingers back."},
+   {n:"Weighted or deep ring dips",d:"3 × 5–8",c:"Add small weight or turn rings out at top."},
+   {n:"Wall HSPU negatives",d:"3 × 3",c:"5-second lowering to headstand height."}],
+ "PULL":[
+   {n:"Archer pull-ups",d:"3 × 3–5/side",c:"Pull toward one hand, other arm near-straight."},
+   {n:"Weighted pull-ups",d:"3 × 4–6",c:"Backpack or belt. Strict, full hang each rep."},
+   {n:"Muscle-up transitions",d:"3 × 3",c:"Band/low rings. Pull to sternum, elbows back and over."}],
+ "LEGS + CORE":[
+   {n:"Pistol squat progressions",d:"3 × 4–6/side",c:"To a box, or holding a counterweight out front."},
+   {n:"Nordic curls",d:"3 × 3–5",c:"Shrink the assist every week."},
+   {n:"Hanging leg raises",d:"3 × 6–10",c:"Straight legs, toes toward the bar, controlled down."}],
+ "HANDSTAND / SKILL":[
+   {n:"Chest-to-wall handstand",d:"4 × 30–60s",c:"Nose near wall, heels barely touching. Shift weight hand to hand."},
+   {n:"Freestanding kick-up attempts",d:"10 attempts",c:"Kick to find balance, bail with a cartwheel."},
+   {n:"L-sit (full)",d:"4 × 8–15s",c:"Legs locked straight. Accumulate 45s total."}],
+ "FULL BODY":[
+   {n:"PPPU + dips superset",d:"2 rounds",c:"5 pseudo planche push-ups into 6 dips."},
+   {n:"Pull-up ladder",d:"1-2-3-4",c:"Minimal rest between rungs."},
+   {n:"Pistol practice + leg raises",d:"2 rounds",c:"4/side into 8 raises."}],
+ "TEST DAY":[
+   {n:"Max L-sit",d:"1 attempt",c:"Legs straight and horizontal."},
+   {n:"Max freestanding handstand",d:"best of 5",c:"Record your longest balance."},
+   {n:"Max strict pull-ups",d:"1 all-out set",c:"Double digits is the phase target."}],
+ "MOBILITY":[
+   {n:"Skin the cat",d:"3 × 3",c:"Slow rotation, pause in German hang."},
+   {n:"Pancake stretch",d:"3 × 45s",c:"Hinge from hips, chest forward."},
+   {n:"Bridge push-ups",d:"3 × 5",c:"Open the shoulders, not just the lower back."}]},
+{ "PUSH":[
+   {n:"Handstand push-ups (wall)",d:"3 × 3–6",c:"Full range to floor or books. Kick off wall support as able."},
+   {n:"Planche lean / tuck planche",d:"4 × 10–15s",c:"Maximum forward lean, rounded upper back."},
+   {n:"Ring dips (turned out)",d:"3 × 6–8",c:"RTO at the top of every rep."}],
+ "PULL":[
+   {n:"One-arm pull-up work",d:"3 × 3/side",c:"Archer, towel-assist, or weighted negatives."},
+   {n:"Strict muscle-ups",d:"3 × 2–4",c:"False grip, no kip. Band assist only if needed."},
+   {n:"Front lever tuck holds",d:"4 × 8–12s",c:"Body horizontal, arms locked straight."}],
+ "LEGS + CORE":[
+   {n:"Pistol squats",d:"3 × 5–8/side",c:"Full depth, heel down, no support."},
+   {n:"Dragon flag",d:"3 × 4–6",c:"Lower straight body from shoulders, no hip break."},
+   {n:"Nordic curls (full)",d:"3 × 4–6",c:"The strongest hamstrings in the gym."}],
+ "HANDSTAND / SKILL":[
+   {n:"Freestanding handstand",d:"8 min practice",c:"Sets of attempts and holds. Target: 30–60s balance."},
+   {n:"Handstand shapes",d:"5 min",c:"Tuck, straddle, one-leg — control in every shape."},
+   {n:"Press handstand drills",d:"3 × 3",c:"Straddle lifts off a box, hips over shoulders."}],
+ "FULL BODY":[
+   {n:"Muscle-up + HSPU superset",d:"2 rounds",c:"2 muscle-ups into 3 handstand push-ups."},
+   {n:"Front lever + dragon flag",d:"2 rounds",c:"10s hold into 4 flags."},
+   {n:"Pistol flow",d:"2 × 5/side",c:"Alternate legs, no rest at the top."}],
+ "TEST DAY":[
+   {n:"The expert checklist",d:"pick one",c:"Muscle-up, 30s handstand, pistol, dragon flag, 15 pull-ups — test and log."},
+   {n:"Max handstand push-ups",d:"1 attempt",c:"Strict, full range."},
+   {n:"Max front lever tuck",d:"1 attempt",c:"Horizontal and holding."}],
+ "MOBILITY":[
+   {n:"Loaded pancake + bridge",d:"3 rounds",c:"45s each, deep breathing."},
+   {n:"Skin the cat + German hang",d:"3 × 3",c:"Own the full rotation."},
+   {n:"Wrist + ankle care",d:"3 min",c:"A year of training deserves maintenance."}]}];
+const BADGES=[
+ {id:"first",label:"First Session",test:s=>s.totalDone>=1},
+ {id:"streak7",label:"7-Day Streak",test:s=>s.streak>=7},
+ {id:"streak30",label:"30-Day Streak",test:s=>s.streak>=30},
+ {id:"streak100",label:"100-Day Streak",test:s=>s.streak>=100},
+ {id:"sessions50",label:"50 Sessions",test:s=>s.totalDone>=50},
+ {id:"phase1",label:"Foundation Complete",test:s=>s.day>91},
+ {id:"phase2",label:"Builder Complete",test:s=>s.day>182},
+ {id:"halfway",label:"Halfway — Day 183",test:s=>s.day>183},
+ {id:"phase3",label:"Advanced Complete",test:s=>s.day>273},
+ {id:"sessions200",label:"200 Sessions",test:s=>s.totalDone>=200},
+ {id:"phase4",label:"EXPERT — Year Complete",test:s=>s.day>365}];
+
+/* ============ STATE ============ */
+const KEY="cal365state";
+let state=JSON.parse(localStorage.getItem(KEY)||"null")||
+  {day:1,streak:0,lastDate:null,totalDone:0,badges:[],photoWeeks:[],started:today()};
+let tab="today", session=null, tick=null, photoCache={};
+
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function today(){return new Date().toISOString().slice(0,10);}
+function yester(){const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);}
+function phaseOf(day){return Math.min(3,Math.floor((day-1)/91));}
+function weekOf(day){return Math.floor((day-1)/7)+1;}
+function fmt(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
+function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function yt(n){return "https://www.youtube.com/results?search_query="+encodeURIComponent(n.replace(/\(.*?\)/g,"").replace(/\+/g," ").trim()+" calisthenics form tutorial");}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(()=>t.style.display="none",2600);}
+
+/* ============ INDEXEDDB (photos) ============ */
+function db(){return new Promise((res,rej)=>{const r=indexedDB.open("cal365",1);
+  r.onupgradeneeded=()=>r.result.createObjectStore("photos");
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function putPhoto(wk,data){const d=await db();return new Promise((res,rej)=>{
+  const tx=d.transaction("photos","readwrite");tx.objectStore("photos").put(data,wk);
+  tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});}
+async function getPhoto(wk){if(photoCache[wk])return photoCache[wk];const d=await db();
+  return new Promise((res)=>{const q=d.transaction("photos").objectStore("photos").get(wk);
+  q.onsuccess=()=>{photoCache[wk]=q.result;res(q.result);};q.onerror=()=>res(null);});}
+
+/* ============ RENDER ============ */
+const view=document.getElementById("view");
+function header(){
+  document.getElementById("hDay").textContent="DAY "+state.day+" / 365";
+  document.getElementById("hWeek").textContent="WK "+weekOf(state.day);
+  const s=document.getElementById("hStreak");
+  s.textContent="🔥 "+state.streak; s.style.color=state.streak>0?"#E9A820":"#9A988F";
+}
+function render(){header();
+  if(tab==="today") session?renderSession():renderToday();
+  else if(tab==="plan") renderPlan();
+  else if(tab==="progress") renderProgress();
+  else renderPhotos();
+}
+function renderToday(){
+  const p=phaseOf(state.day),m=PHASE_META[p],type=DAY_TYPES[(state.day-1)%7];
+  const blocks=PROGRAM[p][type];
+  const done=state.lastDate===today();
+  view.innerHTML=`
+  <div class="card">
+    <div class="phasebar" style="background:${m.color};color:${m.color==="#E9A820"?"#181A1F":"#fff"}">
+      <span>PHASE ${p+1} · ${m.name.toUpperCase()}</span><span>15:00</span></div>
+    <div class="cardpad">
+      <h2 class="big">${type}</h2>
+      ${blocks.map(b=>`
+        <div class="block" style="border-color:${m.color}">
+          <div class="bname">${esc(b.n)}</div>
+          <div class="bdose">${esc(b.d)}</div>
+          <div class="bcue">${esc(b.c)}</div>
+          <a class="vlink" target="_blank" rel="noreferrer" href="${yt(b.n)}">▶ Watch form video</a>
+        </div>`).join("")}
+      ${done?`<div class="doneflag">✓ Done today — recovery is training too</div>`
+        :`<button class="btn" id="startBtn" style="margin-top:18px">START 15-MIN SESSION</button>
+          <button class="btn2" id="quickBtn">I trained without the timer — mark complete</button>`}
+    </div>
+  </div>
+  <p class="note">Progressions follow the r/bodyweightfitness Recommended Routine and <em>Overcoming Gravity</em>. If a target feels impossible, do the hardest version you can with clean form — the day still counts.</p>`;
+  if(!done){
+    document.getElementById("startBtn").onclick=startSession;
+    document.getElementById("quickBtn").onclick=complete;
+  }
+}
+function startSession(){
+  const p=phaseOf(state.day),type=DAY_TYPES[(state.day-1)%7];
+  const segs=[{l:"Warm-up",d:"Arm circles, wrist rocks, 20 jumping jacks, 10 bodyweight squats",s:120},
+    ...PROGRAM[p][type].map(b=>({l:b.n,d:b.d+" — "+b.c,s:240})),
+    {l:"Cool-down",d:"Shake out, light stretch of what you trained",s:60}];
+  session={segs,idx:0,rem:segs[0].s,run:true,fin:false};
+  startTick(); render();
+}
+function startTick(){clearInterval(tick);
+  tick=setInterval(()=>{if(!session||!session.run)return;
+    if(session.rem>1){session.rem--;updateClock();return;}
+    if(navigator.vibrate)navigator.vibrate(200);
+    if(session.idx<session.segs.length-1){session.idx++;session.rem=session.segs[session.idx].s;render();}
+    else{session.run=false;session.fin=true;session.rem=0;clearInterval(tick);render();}
+  },1000);}
+function updateClock(){const c=document.getElementById("clock");if(c)c.textContent=fmt(session.rem);}
+function renderSession(){
+  const s=session,seg=s.segs[s.idx];
+  const isEx=s.idx>0&&s.idx<s.segs.length-1;
+  view.innerHTML=`<div class="tcenter">
+    <div style="font-family:var(--mono);font-size:12px;color:var(--fade)">SEGMENT ${s.idx+1} / ${s.segs.length}</div>
+    <div style="font-family:var(--display);font-size:24px;margin:10px 0 4px;line-height:1.1">${esc(seg.l)}</div>
+    <div style="font-size:13px;color:#55534B;min-height:40px;line-height:1.4;padding:0 8px">${esc(seg.d)}</div>
+    ${isEx&&!s.fin?`<a class="vlink" style="font-size:13px;margin-top:6px" target="_blank" rel="noreferrer" href="${yt(seg.l)}">▶ Form video for this movement</a>`:""}
+    <div class="tclock" id="clock" style="color:${s.fin?"#17685B":"#181A1F"}">${s.fin?"DONE":fmt(s.rem)}</div>
+    <div class="dots">${s.segs.map((_,i)=>`<div class="dot ${i<s.idx?"done":i===s.idx?"cur":""}"></div>`).join("")}</div>
+    ${s.fin?`<button class="btn" id="logBtn" style="background:#17685B">LOG DAY ${state.day} ✓</button>`
+      :`<button class="btn" id="pauseBtn" style="font-family:var(--body);font-weight:700;font-size:15px">${s.run?"Pause":"Resume"}</button>
+        <button class="btn2" id="skipBtn">Skip segment →</button>
+        <button class="btn3" id="exitBtn">Exit without logging</button>`}
+  </div>`;
+  if(s.fin){document.getElementById("logBtn").onclick=complete;}
+  else{
+    document.getElementById("pauseBtn").onclick=()=>{s.run=!s.run;if(s.run)startTick();render();};
+    document.getElementById("skipBtn").onclick=()=>{
+      if(s.idx<s.segs.length-1){s.idx++;s.rem=s.segs[s.idx].s;}
+      else{s.run=false;s.fin=true;s.rem=0;clearInterval(tick);}render();};
+    document.getElementById("exitBtn").onclick=()=>{clearInterval(tick);session=null;render();};
+  }
+}
+function complete(){
+  const t=today();
+  if(state.lastDate===t){toast("Already logged today — see you tomorrow");session=null;render();return;}
+  state.streak=state.lastDate===yester()?state.streak+1:1;
+  state.day=Math.min(365,state.day+1);
+  state.totalDone++; state.lastDate=t;
+  const fresh=BADGES.filter(b=>!state.badges.includes(b.id)&&b.test(state));
+  fresh.forEach(b=>state.badges.push(b.id));
+  toast(fresh.length?"🏅 Milestone unlocked: "+fresh[0].label:"Day logged. Streak: "+state.streak);
+  session=null; clearInterval(tick); save(); render();
+}
+function renderPlan(){
+  const cur=phaseOf(state.day);
+  view.innerHTML=PHASE_META.map((p,i)=>`
+    <div class="card phase ${i===cur?"":"card-soft"}" style="opacity:${i>cur?.65:1};border-color:${i===cur?p.color:"var(--line)"}">
+      <div class="cardpad">
+        <div class="prow"><span class="pname">${i+1}. ${p.name}</span><span class="pweeks">${p.weeks}</span></div>
+        <p class="bcue" style="margin:8px 0 0">${p.blurb}</p>
+        ${i===cur?`<div style="margin-top:8px;font-size:12px;font-weight:700;color:${p.color==="#E9A820"?"#8a6200":p.color}">← You are here</div>`:""}
+      </div>
+    </div>`).join("")+`
+    <div class="card card-soft"><div class="cardpad">
+      <h3 class="sec">WEEKLY RHYTHM</h3>
+      ${DAY_TYPES.map((d,i)=>`<div class="rhythm ${(state.day-1)%7===i?"cur":""}"><b>${DOW[i]}</b><span>${d}</span></div>`).join("")}
+      <p class="note" style="margin-top:8px">The rhythm follows your day count, not the calendar — miss a day and nothing is skipped.</p>
+    </div></div>`;
+}
+function renderProgress(){
+  const pct=Math.round(state.totalDone/365*100);
+  view.innerHTML=`
+  <div class="statrow">
+    <div class="stat"><div class="v">${state.totalDone}</div><div class="l">SESSIONS</div></div>
+    <div class="stat"><div class="v">${state.streak}</div><div class="l">STREAK</div></div>
+    <div class="stat"><div class="v">${pct}%</div><div class="l">YEAR</div></div>
+  </div>
+  <div class="card"><div class="cardpad">
+    <h3 class="sec">THE YEAR</h3>
+    <div class="grid365">${Array.from({length:365},(_,i)=>{
+      const done=i<state.totalDone, ph=phaseOf(i+1);
+      const cur=i===state.totalDone;
+      return `<div class="cell" title="Day ${i+1}" style="${done?"background:"+PHASE_META[ph].color:cur?"background:#fff;border:1.5px solid var(--cobalt)":""}"></div>`;}).join("")}</div>
+    <div class="legend">${PHASE_META.map(p=>`<span><i style="background:${p.color}"></i>${p.name}</span>`).join("")}</div>
+  </div></div>
+  <div class="card"><div class="cardpad">
+    <h3 class="sec">MILESTONES</h3>
+    ${BADGES.map(b=>{const got=state.badges.includes(b.id);
+      return `<div class="badge ${got?"":"locked"}"><span style="font-size:18px">${got?"🏅":"🔒"}</span><span style="font-weight:${got?700:400}">${b.label}</span></div>`;}).join("")}
+  </div></div>`;
+}
+async function renderPhotos(){
+  const wk=weekOf(state.day);
+  const weeks=[...state.photoWeeks].sort((a,b)=>a-b);
+  view.innerHTML=`
+  <div class="card"><div class="cardpad">
+    <h3 class="sec" style="margin-bottom:0">WEEK ${wk} CHECK-IN</h3>
+    <p class="bcue" style="margin:8px 0 12px">Same pose, same lighting, same spot every week. Photos never leave your phone — they're stored only on this device.</p>
+    <button class="btn" id="snapBtn" style="background:var(--cobalt);font-size:14px">${state.photoWeeks.includes(wk)?"RETAKE THIS WEEK'S PHOTO":"ADD THIS WEEK'S PHOTO"}</button>
+  </div></div>
+  <div id="photoArea"><p class="note" style="text-align:center;margin-top:24px">${weeks.length?"Loading photos…":"No photos yet. Week 1 you will thank Week 52 you."}</p></div>`;
+  document.getElementById("snapBtn").onclick=()=>document.getElementById("photoInput").click();
+  if(!weeks.length)return;
+  const imgs={};
+  for(const w of weeks){imgs[w]=await getPhoto(w);}
+  let html="";
+  if(weeks.length>=2){
+    const f=weeks[0],l=weeks[weeks.length-1];
+    html+=`<div class="card"><div class="cardpad"><h3 class="sec">THEN vs NOW</h3>
+      <div class="cmp">
+        <div><img src="${imgs[f]}" alt="Week ${f}"><div class="plabel">WEEK ${f}</div></div>
+        <div><img src="${imgs[l]}" alt="Week ${l}"><div class="plabel">WEEK ${l}</div></div>
+      </div></div></div>`;}
+  html+=`<div class="pgrid">${weeks.slice().reverse().map(w=>
+    `<div><img src="${imgs[w]}" alt="Week ${w}"><div class="plabel">W${w}</div></div>`).join("")}</div>`;
+  document.getElementById("photoArea").innerHTML=html;
+}
+document.getElementById("photoInput").addEventListener("change",e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f)return;
+  const img=new Image(),url=URL.createObjectURL(f);
+  img.onload=async()=>{
+    const sc=Math.min(1,560/img.width),c=document.createElement("canvas");
+    c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    const data=c.toDataURL("image/jpeg",0.62); URL.revokeObjectURL(url);
+    const wk=weekOf(state.day);
+    try{
+      await putPhoto(wk,data); photoCache[wk]=data;
+      if(!state.photoWeeks.includes(wk))state.photoWeeks.push(wk);
+      save(); toast("Week "+wk+" photo saved"); render();
+    }catch(err){toast("Couldn't save photo");}
+  };
+  img.src=url; e.target.value="";
+});
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  tab=b.dataset.tab;
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));
+  render();});
+render();
+/* offline support */
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
