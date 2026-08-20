@@ -44,6 +44,9 @@
   .btn3{width:100%;padding:10px 0;background:transparent;color:var(--fade);border:none;font-size:13px}
   .note{font-size:12px;color:var(--fade);line-height:1.5}
   .doneflag{margin-top:18px;text-align:center;padding:14px;background:var(--paper);border-radius:10px;color:var(--petrol);font-weight:700}
+  .navday{background:none;border:1px solid var(--line);border-radius:99px;width:36px;height:36px;font-size:18px;color:var(--ink);flex-shrink:0}
+  .navday:disabled{opacity:.25}
+  .undolink{width:100%;background:none;border:none;color:var(--fade);font-size:13px;text-decoration:underline;padding:10px 0;margin-top:4px}
   /* timer */
   .tcenter{text-align:center}
   .tclock{font-family:var(--mono);font-size:76px;font-weight:700;margin:12px 0}
@@ -238,7 +241,7 @@ const BADGES=[
 const KEY="cal365state";
 let state=JSON.parse(localStorage.getItem(KEY)||"null")||
   {day:1,streak:0,lastDate:null,totalDone:0,badges:[],photoWeeks:[],started:today()};
-let tab="today", session=null, tick=null, photoCache={};
+let tab="today", session=null, tick=null, photoCache={}, viewDay=null;
 
 function save(){localStorage.setItem(KEY,JSON.stringify(state));}
 function today(){return new Date().toISOString().slice(0,10);}
@@ -276,15 +279,25 @@ function render(){header();
   else renderPhotos();
 }
 function renderToday(){
-  const p=phaseOf(state.day),m=PHASE_META[p],type=DAY_TYPES[(state.day-1)%7];
+  const d=viewDay??state.day;
+  const preview=d!==state.day;
+  const p=phaseOf(d),m=PHASE_META[p],type=DAY_TYPES[(d-1)%7];
   const blocks=PROGRAM[p][type];
   const done=state.lastDate===today();
   view.innerHTML=`
-  <div class="card">
+  ${preview?`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-family:var(--mono);font-size:12px;color:var(--fade)">PREVIEW · ${d<state.day?"PAST":"UPCOMING"} DAY</span>
+      <button id="backToday" style="background:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;color:var(--cobalt);font-weight:700">Back to today</button>
+    </div>`:""}
+  <div class="card" ${preview?`style="opacity:.92"`:""}>
     <div class="phasebar" style="background:${m.color};color:${m.color==="#E9A820"?"#181A1F":"#fff"}">
-      <span>PHASE ${p+1} · ${m.name.toUpperCase()}</span><span>15:00</span></div>
+      <span>PHASE ${p+1} · ${m.name.toUpperCase()}</span><span>DAY ${d}</span></div>
     <div class="cardpad">
-      <h2 class="big">${type}</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <button class="navday" id="prevDay" ${d<=1?"disabled":""} aria-label="Previous day">‹</button>
+        <h2 class="big" style="text-align:center">${type}</h2>
+        <button class="navday" id="nextDay" ${d>=365?"disabled":""} aria-label="Next day">›</button>
+      </div>
       ${blocks.map(b=>`
         <div class="block" style="border-color:${m.color}">
           <div class="bname">${esc(b.n)}</div>
@@ -292,16 +305,30 @@ function renderToday(){
           <div class="bcue">${esc(b.c)}</div>
           <a class="vlink" target="_blank" rel="noreferrer" href="${yt(b.n)}">▶ Watch form video</a>
         </div>`).join("")}
-      ${done?`<div class="doneflag">✓ Done today — recovery is training too</div>`
+      ${preview?`<p class="note" style="margin:14px 0 0;text-align:center">Browsing only — training happens on today's card.</p>`
+        :done?`<div class="doneflag">✓ Done today — recovery is training too</div>
+          ${state.prevSnap?`<button class="undolink" id="undoBtn">Logged by mistake? Undo today's session</button>`:""}`
         :`<button class="btn" id="startBtn" style="margin-top:18px">START 15-MIN SESSION</button>
           <button class="btn2" id="quickBtn">I trained without the timer — mark complete</button>`}
     </div>
   </div>
   <p class="note">Progressions follow the r/bodyweightfitness Recommended Routine and <em>Overcoming Gravity</em>. If a target feels impossible, do the hardest version you can with clean form — the day still counts.</p>`;
-  if(!done){
+  const bt=document.getElementById("backToday"); if(bt)bt.onclick=()=>{viewDay=null;render();};
+  const pv=document.getElementById("prevDay"); if(pv)pv.onclick=()=>{viewDay=(d-1===state.day)?null:d-1;render();};
+  const nx=document.getElementById("nextDay"); if(nx)nx.onclick=()=>{viewDay=(d+1===state.day)?null:d+1;render();};
+  const ub=document.getElementById("undoBtn"); if(ub)ub.onclick=undo;
+  if(!preview&&!done){
     document.getElementById("startBtn").onclick=startSession;
     document.getElementById("quickBtn").onclick=complete;
   }
+}
+function undo(){
+  if(!state.prevSnap||state.lastDate!==today()){toast("Nothing to undo");return;}
+  const snap=state.prevSnap; delete state.prevSnap;
+  state.day=snap.day; state.streak=snap.streak; state.lastDate=snap.lastDate;
+  state.totalDone=snap.totalDone; state.badges=snap.badges;
+  save(); toast("Today's log undone — day "+state.day+" is back on");
+  render();
 }
 function startSession(){
   const p=phaseOf(state.day),type=DAY_TYPES[(state.day-1)%7];
@@ -346,6 +373,7 @@ function renderSession(){
 function complete(){
   const t=today();
   if(state.lastDate===t){toast("Already logged today — see you tomorrow");session=null;render();return;}
+  state.prevSnap={day:state.day,streak:state.streak,lastDate:state.lastDate,totalDone:state.totalDone,badges:[...state.badges]};
   state.streak=state.lastDate===yester()?state.streak+1:1;
   state.day=Math.min(365,state.day+1);
   state.totalDone++; state.lastDate=t;
@@ -436,7 +464,7 @@ document.getElementById("photoInput").addEventListener("change",e=>{
   img.src=url; e.target.value="";
 });
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
-  tab=b.dataset.tab;
+  tab=b.dataset.tab; viewDay=null;
   document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));
   render();});
 render();
